@@ -207,6 +207,20 @@ footer{border-top:1px solid var(--line);padding:28px 0;margin-top:40px}
 #topBtn:hover{transform:translateY(-3px)}
 .drawer-backdrop{position:fixed;inset:0;background:rgba(4,8,16,.55);z-index:85;opacity:0;pointer-events:none;transition:opacity .2s}
 .drawer-backdrop.show{opacity:1;pointer-events:auto}
+
+/* ================= 编辑密码框 ================= */
+.pass-backdrop{position:fixed;inset:0;background:rgba(4,8,16,.62);z-index:96;display:flex;align-items:center;justify-content:center;padding:20px}
+.pass-modal{background:var(--bg-2);border:1px solid var(--line-strong);border-radius:16px;padding:28px 26px;width:min(360px,100%);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.pass-modal h3{font-size:1.1rem;font-weight:900;margin-bottom:6px}
+.pass-modal .sub{color:var(--ink-2);font-size:.85rem;margin-bottom:16px}
+.pass-modal input{width:100%;background:var(--bg);border:1px solid var(--line-strong);border-radius:8px;color:var(--ink);padding:10px 12px;font-size:15px;outline:none;margin-bottom:14px;text-align:center}
+.pass-modal input:focus{border-color:var(--accent)}
+.pass-actions{display:flex;gap:10px}
+.pass-actions button{flex:1;padding:10px;border-radius:8px;font-weight:700;font-size:.9rem;cursor:pointer;border:1px solid var(--line-strong);background:var(--bg-3);color:var(--ink-2)}
+.pass-actions button:hover{border-color:var(--accent);color:var(--accent)}
+.pass-actions button.primary{background:var(--accent);color:#0B1220;border-color:var(--accent)}
+.pass-actions button.primary:hover{box-shadow:0 4px 16px rgba(79,209,197,.3)}
+.pass-err{color:#FF6B6B;font-size:.8rem;margin-top:10px;font-family:var(--mono);min-height:1.2em}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 </style>
 </head>
@@ -220,7 +234,7 @@ footer{border-top:1px solid var(--line);padding:28px 0;margin-top:40px}
     <a class="brand" href="#top">hackathon_profile</a>
     <div class="nav-right">
       <button class="lang-btn" id="langBtn" title="Switch language">EN / 中</button>
-      <button class="edit-btn" id="editBtn" title="Edit profile">
+      <button class="edit-btn" id="editBtn" title="Edit profile" style="display:none">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
         <span data-i18n="editBtn">编辑资料</span>
       </button>
@@ -330,49 +344,63 @@ footer{border-top:1px solid var(--line);padding:28px 0;margin-top:40px}
   </div>
 </aside>
 
+<!-- ================= 编辑密码框（访客不可见，需触发才弹出） ================= -->
+<div class="pass-backdrop" id="passBackdrop" style="display:none">
+  <div class="pass-modal">
+    <h3 data-i18n="passTitle">编辑密码</h3>
+    <p class="sub" data-i18n="passSub">输入密码后才能修改资料。</p>
+    <input type="password" id="passInput" autocomplete="off" data-i18n-ph="passPh">
+    <div class="pass-actions">
+      <button id="passCancel" data-i18n="passCancel">取消</button>
+      <button id="passOk" class="primary" data-i18n="passOk">解锁</button>
+    </div>
+    <p class="pass-err" id="passErr"></p>
+  </div>
+</div>
+
 <script>
 /* ================================================================
    PROFILE：你的全部资料（双语）。页面上的「编辑资料」会直接改这份数据，
    也可以在导出 HTML 后自动嵌入新文件。默认值 = 占位示例。
    ================================================================ */
 const PROFILE = /*__PROFILE__*/{
-  nickname:{en:"Your Nickname", zh:"[你的昵称]"},
-  tagline:{en:"One-line intro, e.g. Full-stack engineer / 4 yrs / shipping before the deadline", zh:"[一句话介绍自己，例如：全栈工程师 / 4 年经验 / 专治上线前最后一公里]"},
+  nickname:{en:"Atticus", zh:"Atticus"},
+  tagline:{en:"An AI creator whose head is full of “if only AI could do this” — turning ideas into products, building them by hand, and telling the story on stage.", zh:"一个脑子里装满了“如果 AI 能这样就好了”的 AI 创造者 —— 能把想法规划成产品、用代码亲手实现，再站上台讲给所有人听。"},
   badge:{en:"Open to teammates", zh:"黑客松找队友中"},
-  city:"[City / Remote]",
+  city:{en:"Hangzhou / Remote", zh:"杭州 / 线上"},
   lines:{
-    en:["> 48 hours to turn ideas into a working demo.","> Looking for one more teammate. Maybe you?","> Contact info below. Don't hesitate."],
-    zh:["> 48 小时，把想法变成能跑的 Demo。","> 现在缺一个队友，可能就是你。","> 联系方式在下面，别犹豫。"]
+    en:["> Turning “if only AI could…” into something real.","> Ideas. Code. Pitch. End to end.","> Looking for a teammate who knows their niche. Maybe you?"],
+    zh:["> 把“如果 AI 能这样就好了”变成真的。","> 点子、代码、路演 —— 一条龙。","> 正在找一个深耕场景的队友，会是你吗？"]
   },
   qa:[
-    {en:"e.g. Frontend dev / UI design / Data viz / Pitching — pick your 2-3 strongest", zh:"[例：前端开发 / UI 设计 / 数据可视化 / 路演表达 —— 挑 2~3 个最拿手的]"},
-    {en:"e.g. AI productivity tools / fun social products / hardware × software — your goal for this hackathon", zh:"[例：AI 效率工具 / 有趣的社会化产品 / 硬件 × 软件 —— 写上你这次黑客松的目标方向]"},
-    {en:"e.g. Looking for 1 backend / algorithm / design teammate, ideally someone who can grind until the demo runs", zh:"[例：缺 1 名会后端/算法/设计的队友，最好和我一样能通宵肝到 demo 跑起来]"}
+    {en:"Idea fountain + engineering muscle + pitch duty — never short on ideas, code that ships, and a story that lands with the judges.", zh:"点子供给站 + 工程主力 + 路演担当 —— 想法多不怕冷场，代码能落地，上台能把团队的故事讲进评委心里。"},
+    {en:"An AI product with real user value and a great story — not tech for tech's sake.", zh:"做一个有真实用户价值、能讲出好故事的 AI 产品，不只是技术炫技。"},
+    {en:"Teammates who've gone deep in a niche, so my ideas land on real needs instead of floating in the air.", zh:"在细分场景深耕过的队友，让我的想法踩在真实需求上，而不是悬在半空。"}
   ],
   skills:[
-    {cat:{en:"Frontend",zh:"前端"}, tags:[
-      {t_en:"[React]",t_zh:"[React]",lv:"[★★★]",hot:true},
-      {t_en:"[TypeScript]",t_zh:"[TypeScript]",lv:"",hot:false},
-      {t_en:"[CSS / Motion]",t_zh:"[CSS/动画]",lv:"",hot:false},
-      {t_en:"[Three.js]",t_zh:"[Three.js]",lv:"",hot:false}
+    {cat:{en:"Engineering",zh:"工程 / 全栈"}, tags:[
+      {t_en:"React / TypeScript",t_zh:"React / TypeScript",lv:"★★★",hot:true},
+      {t_en:"Next.js / Full-stack",t_zh:"Next.js / 全栈",lv:"★★★",hot:false},
+      {t_en:"Python",t_zh:"Python",lv:"★★",hot:false},
+      {t_en:"Node.js",t_zh:"Node.js",lv:"★★",hot:false}
     ]},
-    {cat:{en:"Backend / Data",zh:"后端 / 数据"}, tags:[
-      {t_en:"[Node.js]",t_zh:"[Node.js]",lv:"[★★]",hot:false},
-      {t_en:"[Python]",t_zh:"[Python]",lv:"",hot:false},
-      {t_en:"[SQL / Vector DB]",t_zh:"[SQL / 向量库]",lv:"",hot:false}
+    {cat:{en:"AI / ML",zh:"AI / 机器学习"}, tags:[
+      {t_en:"LLM Apps (Prompt / RAG)",t_zh:"LLM 应用（提示词 / RAG）",lv:"★★★",hot:true},
+      {t_en:"Agents",t_zh:"智能体 / Agent",lv:"★★",hot:false},
+      {t_en:"Data Analysis",t_zh:"数据分析",lv:"★★",hot:false}
     ]},
-    {cat:{en:"Design / Others",zh:"设计 / 其他"}, tags:[
-      {t_en:"[Figma]",t_zh:"[Figma]",lv:"",hot:false},
-      {t_en:"[Rapid Prototyping]",t_zh:"[快速原型]",lv:"",hot:false},
-      {t_en:"[Pitching / Storytelling]",t_zh:"[路演 / 讲故事]",lv:"",hot:false}
+    {cat:{en:"Product / Expression",zh:"产品 / 表达"}, tags:[
+      {t_en:"Product Planning",t_zh:"产品规划",lv:"★★★",hot:false},
+      {t_en:"Rapid Prototyping",t_zh:"快速原型",lv:"★★★",hot:false},
+      {t_en:"Pitching / Storytelling",t_zh:"路演 / 讲故事",lv:"★★★",hot:true}
     ]}
   ],
   projects:[
-    {time:"[2026.09]", tag:"[Newest]", title:{en:"[Project C]",zh:"[项目名 C]"}, desc:{en:"[One line: what you built, the problem it solves, your role. e.g. AI meeting notes tool built from 0 to 1 in 48h — owned frontend & pitch, 2nd place in the regional round.]",zh:"[一句话说清：做了什么、解决什么问题、你的角色。例如：48h 内从 0 到 1 做完的 AI 会议纪要工具，负责前端与路演，拿了赛区第二名。]"}},
-    {time:"[2026.05]", tag:"", title:{en:"[Project B]",zh:"[项目名 B]"}, desc:{en:"[One-line description. Leave empty to hide.]",zh:"[一句话描述。留空这行也行，框架会自动隐藏空描述。]"}},
-    {time:"[2025]", tag:"", title:{en:"[Project A]",zh:"[项目名 A]"}, desc:{en:"[One-line description.]",zh:"[一句话描述。]"}}
+    {time:"2026", tag:"Newest", title:{en:"Campus Efficiency AI",zh:"校园效率 AI"}, desc:{en:"An AI productivity tool for campus life — automating the repetitive parts of studying and club work, built end to end from idea to demo.",zh:"面向校园场景的效率工具，用 AI 把学习和社团里的琐事自动化，从想法到 demo 一条龙做完。"}},
+    {time:"2025", tag:"", title:{en:"Mistake Analysis AI",zh:"错题整理分析 AI"}, desc:{en:"Snap a photo of a wrong answer — AI sorts it into knowledge points, diagnoses the cause, and targets your revision.",zh:"拍照整理错题，自动归类知识点、生成错因分析，让复习有的放矢。"}},
+    {time:"2023", tag:"", title:{en:"LEGO Robotics",zh:"乐高机器人"}, desc:{en:"Where hands-on building met programming — the project that started the love for tinkering and debugging.",zh:"从搭建到编程控制的机器人入门项目，动手和调试的乐趣从这里开始。"}}
   ],
-  contact:{email:"you@example.com", github:"", wechat:""}
+  contact:{email:"5942116@gmail.com", github:"https://github.com/AtticusJin", wechat:"haveafan"}
 }/*__PROFILE_END__*/;
 
 /* ============ i18n 框架文案 ============ */
@@ -393,7 +421,8 @@ const I18N = {
     addGroup:"+ Add group", addTag:"+ Add tag", addProj:"+ Add project", del:"Delete",
     saved:"Draft saved", exported:"Exported! Send the downloaded file back to deploy it.",
     foot:"Built for Hackathon", footBtn:"back to top",
-    emptyProjects:"No projects yet — add them in the Edit panel."
+    emptyProjects:"No projects yet — add them in the Edit panel.",
+    passTitle:"Edit password", passSub:"Enter the password to edit this profile.", passPh:"Password", passOk:"Unlock", passCancel:"Cancel", passErr:"Wrong password."
   },
   zh:{
     editBtn:"编辑资料", navAbout:"关于我", navSkills:"技能", navProjects:"项目", navContact:"联系",
@@ -411,7 +440,8 @@ const I18N = {
     addGroup:"+ 添加分组", addTag:"+ 添加标签", addProj:"+ 添加项目", del:"删除",
     saved:"草稿已保存", exported:"已导出！把下载的文件发回即可部署。",
     foot:"为黑客松而建", footBtn:"回到顶部",
-    emptyProjects:"还没有项目 —— 在「编辑资料」里添加。"
+    emptyProjects:"还没有项目 —— 在「编辑资料」里添加。",
+    passTitle:"编辑密码", passSub:"输入密码后才能修改资料。", passPh:"密码", passOk:"解锁", passCancel:"取消", passErr:"密码不对哦。"
   }
 };
 
@@ -444,9 +474,10 @@ try{
 /* ============ 渲染 ============ */
 function renderStatic(){
   document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.placeholder = t(el.dataset.i18nPh); });
   document.documentElement.lang = LANG;
   $('#langBtn').textContent = LANG==='en' ? 'EN / 中' : '中 / EN';
-  $('#badgeText').textContent = pick(PROFILE.badge) + (PROFILE.city? ' · ' + PROFILE.city : '');
+  $('#badgeText').textContent = pick(PROFILE.badge) + (PROFILE.city? ' · ' + pick(PROFILE.city) : '');
   $('#nickname').textContent = pick(PROFILE.nickname) || t('lNick');
   $('#tagline').textContent = pick(PROFILE.tagline);
   $('#footCopy').textContent = '© ' + new Date().getFullYear() + ' · ' + (pick(PROFILE.nickname)||'') + ' · ' + t('foot');
@@ -509,11 +540,49 @@ $('#langBtn').addEventListener('click', ()=>{
   renderAll(); restartTyping();
 });
 
-/* ============ 编辑面板 ============ */
+/* ============ 编辑面板（受保护入口） ============ */
 const drawer=$('#drawer'), backdrop=$('#drawerBackdrop');
+/* 编辑密码：默认 hackathon2026，改成你自己的（搜索 EDIT_PASSWORD 即可） */
+const EDIT_PASSWORD = "hackathon2026";
+function authed(){ return sessionStorage.getItem('hk_auth')==='1'; }
+function showEditBtn(){ $('#editBtn').style.display='inline-flex'; }
 function openDrawer(){ buildForm(); drawer.classList.add('open'); backdrop.classList.add('show'); document.body.style.overflow='hidden'; }
 function closeDrawer(){ drawer.classList.remove('open'); backdrop.classList.remove('show'); document.body.style.overflow=''; }
 $('#editBtn').addEventListener('click', openDrawer);
+
+/* 触发编辑（访客看不到入口）：
+   ① 地址栏网址后面加 #edit 并回车；
+   ② 2 秒内快速连点左上角品牌名 5 次。 */
+function tryOpenEditor(){
+  if(authed()){ showEditBtn(); openDrawer(); return; }
+  showPassModal();
+}
+let brandClicks=0, brandTimer;
+$('.brand').addEventListener('click', ()=>{
+  brandClicks++;
+  clearTimeout(brandTimer);
+  brandTimer = setTimeout(()=>brandClicks=0, 2000);
+  if(brandClicks>=5){ brandClicks=0; tryOpenEditor(); }
+});
+
+/* 密码框 */
+const passBackdrop=$('#passBackdrop'), passInput=$('#passInput'), passErr=$('#passErr');
+function showPassModal(){ passBackdrop.style.display='flex'; passInput.value=''; passErr.textContent=''; setTimeout(()=>passInput.focus(),60); }
+function hidePassModal(){ passBackdrop.style.display='none'; }
+$('#passOk').addEventListener('click', ()=>{
+  if(passInput.value===EDIT_PASSWORD){
+    sessionStorage.setItem('hk_auth','1');
+    hidePassModal(); showEditBtn(); openDrawer();
+  }else{
+    passErr.textContent = t('passErr');
+    passInput.select();
+  }
+});
+$('#passCancel').addEventListener('click', ()=>{
+  hidePassModal();
+  if(location.hash==='#edit'){ history.replaceState(null,'',location.pathname+location.search); }
+});
+passInput.addEventListener('keydown', e=>{ if(e.key==='Enter') $('#passOk').click(); });
 $('#drawerClose').addEventListener('click', closeDrawer);
 backdrop.addEventListener('click', closeDrawer);
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDrawer(); });
@@ -556,7 +625,7 @@ function buildForm(){
   html += biField(t('lNick'), 'nickname');
   html += biArea(t('lTagline'), 'tagline');
   html += biField(t('lBadge'), 'badge');
-  html += fld(t('lCity'), 'city');
+  html += biField(t('lCity'), 'city');
   for(let i=0;i<3;i++){ html += biLine(i); }
   html += `<div class="fs-title">${t('fQA')}</div>`;
   html += biArea(t('lQA1'), 'qa.0');
@@ -664,6 +733,8 @@ topBtn.addEventListener('click', ()=>window.scrollTo({top:0,behavior:'smooth'}))
 /* ============ 启动 ============ */
 renderAll();
 restartTyping();
+if(location.hash==='#edit'){ tryOpenEditor(); }
+window.addEventListener('hashchange', ()=>{ if(location.hash==='#edit'){ tryOpenEditor(); } });
 </script>
 </body>
 </html>
