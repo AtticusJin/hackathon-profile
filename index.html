@@ -4,12 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hackathon Profile</title>
-<!-- ================= 使用说明 =================
-  1. 点右上角「编辑资料」，直接在表单里填，页面实时预览；草稿自动保存在浏览器里。
-  2. 填完点「导出 HTML」，下载一个填好内容的完整页面。
-  3. 把下载的文件发回给豆包（或自己在仓库替换 index.html 并 push），即可更新线上。
-  4. 右上角 EN/中 可切换语言；你填的内容也支持中英双份，填哪份显示哪份。
-==================================================================== -->
+<!-- 黑客松个人页：内容在 JS 的 PROFILE 中维护；需要改内容/换密码/调样式，直接找豆包代改即可。 -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230B1220'/%3E%3Cpath d='M8 23V9l16 9V9' stroke='%234FD1C5' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://miaoda.feishu.cn">
 <link href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Sans:wght@400;600;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -315,7 +310,7 @@ footer{border-top:1px solid var(--line);padding:28px 0;margin-top:40px}
     <h2 data-i18n="contactTitle">一起做点东西？</h2>
     <p data-i18n="contactSub">如果你也报名了同一场黑客松，或正好缺这样的队友 —— 随时戳我。</p>
     <div class="contact-ways" id="contactWays"></div>
-    <p class="hint" data-i18n="contactHint">// 在「编辑资料」里填好联系方式，这里会自动更新。</p>
+    <p class="hint" data-i18n="contactHint">// 发邮件或加微信都可以，看到就回。</p>
   </div>
 </section>
 </main>
@@ -410,7 +405,7 @@ const I18N = {
     ctaTeam:"Team up with me", ctaProjects:"My projects",
     aboutTitle:"Three lines about me", skillsTitle:"Skill stack", projectsTitle:"Projects",
     contactTitle:"Build something together?", contactSub:"If you're also in this hackathon, or you happen to need a teammate like me — reach out anytime.",
-    contactHint:"// Fill in your contact in the Edit panel and it updates here automatically.",
+    contactHint:"// Drop a line — email or WeChat, I reply fast.",
     drawerTitle:"Edit profile", saveDraft:"Save draft", exportBtn:"Export HTML",
     fBasic:"01 · Basic", fQA:"02 · Three lines", fSkills:"03 · Skills", fProjects:"04 · Projects", fContact:"05 · Contact",
     lNick:"Nickname", lTagline:"One-line intro", lBadge:"Badge text", lCity:"City / Remote",
@@ -421,7 +416,7 @@ const I18N = {
     addGroup:"+ Add group", addTag:"+ Add tag", addProj:"+ Add project", del:"Delete",
     saved:"Draft saved", exported:"Exported! Send the downloaded file back to deploy it.",
     foot:"Built for Hackathon", footBtn:"back to top",
-    emptyProjects:"No projects yet — add them in the Edit panel.",
+    emptyProjects:"No projects yet — coming soon.",
     passTitle:"Edit password", passSub:"Enter the password to edit this profile.", passPh:"Password", passOk:"Unlock", passCancel:"Cancel", passErr:"Wrong password."
   },
   zh:{
@@ -429,7 +424,7 @@ const I18N = {
     ctaTeam:"找我组队", ctaProjects:"看我的项目",
     aboutTitle:"三句话认识我", skillsTitle:"技能栈", projectsTitle:"项目经历",
     contactTitle:"一起做点东西？", contactSub:"如果你也报名了同一场黑客松，或正好缺这样的队友 —— 随时戳我。",
-    contactHint:"// 在「编辑资料」里填好联系方式，这里会自动更新。",
+    contactHint:"// 发邮件或加微信都可以，看到就回。",
     drawerTitle:"编辑资料", saveDraft:"存草稿", exportBtn:"导出 HTML",
     fBasic:"01 · 基本信息", fQA:"02 · 三句话", fSkills:"03 · 技能", fProjects:"04 · 项目", fContact:"05 · 联系方式",
     lNick:"昵称", lTagline:"一句话介绍", lBadge:"状态徽章文字", lCity:"城市 / 线上",
@@ -440,7 +435,7 @@ const I18N = {
     addGroup:"+ 添加分组", addTag:"+ 添加标签", addProj:"+ 添加项目", del:"删除",
     saved:"草稿已保存", exported:"已导出！把下载的文件发回即可部署。",
     foot:"为黑客松而建", footBtn:"回到顶部",
-    emptyProjects:"还没有项目 —— 在「编辑资料」里添加。",
+    emptyProjects:"还没有项目 —— 敬请期待。",
     passTitle:"编辑密码", passSub:"输入密码后才能修改资料。", passPh:"密码", passOk:"解锁", passCancel:"取消", passErr:"密码不对哦。"
   }
 };
